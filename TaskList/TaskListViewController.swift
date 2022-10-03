@@ -9,10 +9,10 @@ import UIKit
 
 class TaskListViewController: UITableViewController {
     
-    private let viewContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    private let viewContext = StorageManger.shared.context
     
     private let cellID = "task"
-    private var taskList: [Task] = []
+     var taskList: [Task] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,12 +53,8 @@ class TaskListViewController: UITableViewController {
     }
     
     private func fetchData() {
-        let fetchRequest = Task.fetchRequest()
-        
-        do {
-            taskList = try viewContext.fetch(fetchRequest)
-        } catch {
-            print(error.localizedDescription)
+        StorageManger.shared.fetchData { taskList in
+            self.taskList = taskList
         }
     }
     
@@ -79,9 +75,9 @@ class TaskListViewController: UITableViewController {
     }
     
     private func save(_ taskName: String) {
-        let task = Task(context: viewContext)
-        task.title = taskName
-        taskList.append(task)
+        StorageManger.shared.save(taskName) { task in
+            self.taskList.append(task)
+        }
         
         let cellIndex = IndexPath(row: taskList.count - 1, section: 0)
         tableView.insertRows(at: [cellIndex], with: .automatic)
